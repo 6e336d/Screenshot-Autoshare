@@ -1,4 +1,5 @@
 from tkinter import *
+import keyboard
 import pyautogui
 import ftplib
 import datetime
@@ -7,13 +8,13 @@ import time
 import os
 from time import gmtime, strftime
 
-
-filepath = "https://EXAMPLE.COM/screenshots/"
+#FTP Details for your website
+filepath = "https://your.site.com/screenshots"
 localpath = "C:\snips\\"
-host = "EXAMPLE.COM"
-user = "EXAMPLE_FTP_USER"
-passw = "EXAMPLE_FTP_PWD"
-
+host = "site.com"
+user = "user"
+passw = "password"
+#hotkey = 'ctrl+shift+q'
 
 if not os.path.exists(localpath):
     os.makedirs(localpath)
@@ -21,6 +22,7 @@ if not os.path.exists(localpath):
 
 
 class Application():
+    
     def __init__(self, master):
         self.master = master
         self.rect = None
@@ -29,12 +31,14 @@ class Application():
         self.start_y = None
         self.curX = None
         self.curY = None
-
+        keyboard.add_hotkey('ctrl+shift', self.createScreenCanvas)
+        root.bind("<Control-Shift-KeyPress>", self.capture_keyboard_shortcut)
         # root.configure(background = 'red')
         # root.attributes("-transparentcolor","red")
 
+        #root.withdraw()
         root.attributes("-transparent", "blue")
-        root.geometry('400x80+200+200')  # set new geometry
+        root.geometry('300x80+200+200')  # set new geometry
         root.title('Snipping Tool Rewritten')
         self.menu_frame = Frame(master, bg="blue")
         self.menu_frame.pack(fill=BOTH, expand=YES)
@@ -42,7 +46,7 @@ class Application():
         self.buttonBar = Frame(self.menu_frame,bg="")
         self.buttonBar.pack(fill=BOTH,expand=YES)
 
-        self.snipButton = Button(self.buttonBar, width=7, height=2, command=self.createScreenCanvas, background="white")
+        self.snipButton = Button(self.buttonBar, width=42, height=5, command=self.createScreenCanvas, background="white", text="Click to take Screenshot!", fg="black")
         self.snipButton.pack(expand=YES)
         self.snipButton.place(x=0, y=0)
 
@@ -53,18 +57,23 @@ class Application():
         self.picture_frame = Frame(self.master_screen, background = "blue")
         self.picture_frame.pack(fill=BOTH, expand=YES)
 
+    #if pyautogui.hotkey('ctrl', 'shift'):    
+    
+    def capture_keyboard_shortcut(self, event):
+        self.createScreenCanvas()
+
     def takeBoundedScreenShot(self, x1, y1, x2, y2):
-        im = pyautogui.screenshot(region=(x1, y1, x2, y2))
-        x = datetime.datetime.now()
-        fileName = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
-        im.save(localpath + fileName + ".png")
-        uploadName = (localpath + fileName + ".png")
-        session = ftplib.FTP(host,user,passw)
-        file = open(uploadName,'rb')                  # file to send
-        session.storbinary('STOR ' + fileName + '.png', file)     # send the file
-        file.close()                                    # close file and FTP
-        session.quit()
-        pyperclip.copy(filepath + fileName + '.png')
+         im = pyautogui.screenshot(region=(x1, y1, x2, y2))
+         x = datetime.datetime.now()
+         fileName = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
+         im.save(localpath + fileName + ".png")
+         uploadName = (localpath + fileName + ".png")
+         session = ftplib.FTP(host,user,passw)
+         file = open(uploadName,'rb')                  # file to send
+         session.storbinary('STOR ' + fileName + '.png', file)     # send the file
+         file.close()                                    # close file and FTP
+         session.quit()
+         pyperclip.copy(filepath + fileName + '.png')
         
 
     def createScreenCanvas(self):
